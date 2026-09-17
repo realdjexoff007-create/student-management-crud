@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Student Management System</title>
+<style>
+  :root{
+    --ink:#1b2430;
+    --ink-soft:#4a5568;
+    --paper:#f6f4ee;
+    --panel:#ffffff;
+    --rule:#dcd7c9;
+    --accent:#2f5d50;
+    --accent-soft:#e4ece7;
+    --danger:#9a3b3b;
+    --danger-soft:#f3e4e1;
+    --focus:#2f5d50;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --ink:#ece8dd; --ink-soft:#b7b2a3; --paper:#171a16; --panel:#20241f;
+      --rule:#3a3f36; --accent:#8fbfae; --accent-soft:#26332c; --danger:#e19a8f;
+      --danger-soft:#3a2622; --focus:#8fbfae;
+    }
+  }
+  :root[data-theme="dark"]{
+    --ink:#ece8dd; --ink-soft:#b7b2a3; --paper:#171a16; --panel:#20241f;
+    --rule:#3a3f36; --accent:#8fbfae; --accent-soft:#26332c; --danger:#e19a8f;
+    --danger-soft:#3a2622; --focus:#8fbfae;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family: "Iowan Old Style","Georgia",serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:920px; margin:0 auto; padding:40px 24px 80px;}
+  header.top{
+    display:flex; justify-content:space-between; align-items:flex-end;
+    border-bottom:2px solid var(--ink); padding-bottom:18px; margin-bottom:34px; gap:16px; flex-wrap:wrap;
+  }
+  .brand{display:flex; flex-direction:column; gap:2px;}
+  .brand .ledger-no{font-family:"SF Mono","Menlo",monospace; font-size:12px; color:var(--ink-soft); letter-spacing:.02em;}
+  h1{font-size:32px; margin:2px 0 0; font-weight:600; letter-spacing:-0.01em;}
+  .tally{
+    font-family:"SF Mono","Menlo",monospace; font-size:13px; color:var(--ink-soft);
+    text-align:right; line-height:1.6;
+  }
+  .tally strong{color:var(--ink); font-size:20px; font-family:inherit; display:block;}
+
+  .card{
+    background:var(--panel); border:1px solid var(--rule); border-radius:4px;
+    padding:26px 28px; margin-bottom:28px;
+  }
+  .card h2{
+    font-size:14px; text-transform:none; letter-spacing:0; margin:0 0 18px;
+    color:var(--ink); font-weight:600; border-bottom:1px solid var(--rule); padding-bottom:10px;
+  }
+  form.entry{display:grid; grid-template-columns:1fr 1fr; gap:16px 20px;}
+  .field{display:flex; flex-direction:column; gap:6px;}
+  .field.full{grid-column:1/-1;}
+  label{font-size:12.5px; color:var(--ink-soft);}
+  input, select{
+    font-family:inherit; font-size:15px; padding:9px 10px; border:1px solid var(--rule);
+    border-radius:3px; background:var(--paper); color:var(--ink);
+  }
+  input:focus, select:focus, button:focus-visible{
+    outline:2px solid var(--focus); outline-offset:1px;
+  }
+  .err{font-size:12px; color:var(--danger); min-height:14px;}
+  .form-actions{grid-column:1/-1; display:flex; gap:10px; margin-top:4px; align-items:center;}
+  button{
+    font-family:inherit; font-size:14px; cursor:pointer; border-radius:3px; border:1px solid transparent;
+    padding:10px 18px;
+  }
+  .btn-primary{background:var(--ink); color:var(--paper); border-color:var(--ink);}
+  .btn-primary:hover{opacity:.88;}
+  .btn-ghost{background:transparent; color:var(--ink-soft); border-color:var(--rule);}
+  .btn-ghost:hover{color:var(--ink); border-color:var(--ink-soft);}
+  .edit-flag{font-size:12.5px; color:var(--accent); display:none; align-items:center; gap:6px;}
+  .edit-flag.show{display:flex;}
+  .dot{width:6px; height:6px; border-radius:50%; background:var(--accent); display:inline-block;}
+
+  .toolbar{display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; gap:12px; flex-wrap:wrap;}
+  .toolbar input{flex:1; min-width:160px;}
+  table{width:100%; border-collapse:collapse; font-size:14.5px;}
+  thead th{
+    text-align:left; font-weight:600; font-size:12px; color:var(--ink-soft);
+    border-bottom:1px solid var(--ink); padding:0 10px 10px; letter-spacing:.02em;
+  }
+  tbody td{padding:12px 10px; border-bottom:1px solid var(--rule); vertical-align:middle;}
+  tbody tr:hover{background:var(--accent-soft);}
+  .roll{font-family:"SF Mono","Menlo",monospace; color:var(--ink-soft); font-size:13px;}
+  .actions{display:flex; gap:8px; justify-content:flex-end;}
+  .actions button{padding:5px 12px; font-size:13px;}
+  .btn-edit{background:var(--accent-soft); color:var(--accent); border-color:transparent;}
+  .btn-del{background:var(--danger-soft); color:var(--danger); border-color:transparent;}
+  .empty{padding:36px 10px; text-align:center; color:var(--ink-soft); font-size:14px;}
+  .toast{
+    position:fixed; bottom:26px; left:50%; transform:translateX(-50%) translateY(12px);
+    background:var(--ink); color:var(--paper); padding:10px 18px; border-radius:4px; font-size:14px;
+    opacity:0; pointer-events:none; transition:opacity .25s ease, transform .25s ease;
+  }
+  .toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+  footer{margin-top:30px; font-size:12px; color:var(--ink-soft); text-align:center;}
+  @media (max-width:560px){
+    form.entry{grid-template-columns:1fr;}
+    .tally{text-align:left;}
+    header.top{flex-direction:column; align-items:flex-start;}
+    .actions{justify-content:flex-start;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="brand">
+      <span class="ledger-no">REGISTER · CRUD DEMO</span>
+      <h1>Student Management System</h1>
+    </div>
+    <div class="tally">
+      <strong id="countVal">0</strong>
+      students enrolled
+    </div>
+  </header>
+
+  <section class="card">
+    <h2 id="formTitle">Add a student</h2>
+    <form class="entry" id="studentForm" novalidate>
+      <div class="field">
+        <label for="name">Name</label>
+        <input id="name" name="name" autocomplete="off" placeholder="e.g. Pragee Suresh">
+        <div class="err" id="err-name"></div>
+      </div>
+      <div class="field">
+        <label for="roll">Roll number</label>
+        <input id="roll" name="roll" autocomplete="off" placeholder="e.g. 101">
+        <div class="err" id="err-roll"></div>
+      </div>
+      <div class="field">
+        <label for="course">Course</label>
+        <input id="course" name="course" autocomplete="off" placeholder="e.g. CSE">
+        <div class="err" id="err-course"></div>
+      </div>
+      <div class="field">
+        <label for="email">Email</label>
+        <input id="email" name="email" autocomplete="off" placeholder="e.g. pragee@college.edu">
+        <div class="err" id="err-email"></div>
+      </div>
+      <div class="form-actions">
+        <button type="submit" class="btn-primary" id="submitBtn">Add student</button>
+        <button type="button" class="btn-ghost" id="cancelBtn" style="display:none;">Cancel edit</button>
+        <span class="edit-flag" id="editFlag"><span class="dot"></span>Editing record — changes replace the existing entry</span>
+      </div>
+    </form>
+  </section>
+
+  <section class="card">
+    <div class="toolbar">
+      <h2 style="border:none; margin:0; padding:0;">Students</h2>
+      <input id="search" placeholder="Search by name, roll or course…" style="max-width:280px;">
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>Roll No</th>
+          <th>Name</th>
+          <th>Course</th>
+          <th>Email</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="tableBody"></tbody>
+    </table>
+    <div class="empty" id="emptyState" style="display:none;">No students yet — add the first record above.</div>
+  </section>
+
+  <footer>Data is stored locally in this browser (no server needed for the demo). Roll numbers must be unique.</footer>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  const STORAGE_KEY = "sms_students_v1";
+  const form = document.getElementById("studentForm");
+  const tableBody = document.getElementById("tableBody");
+  const emptyState = document.getElementById("emptyState");
+  const countVal = document.getElementById("countVal");
+  const searchInput = document.getElementById("search");
+  const cancelBtn = document.getElementById("cancelBtn");
+  const submitBtn = document.getElementById("submitBtn");
+  const editFlag = document.getElementById("editFlag");
+  const formTitle = document.getElementById("formTitle");
+  const toast = document.getElementById("toast");
+
+  let students = [];
+  let editingId = null;
+
+  function load(){
+    try{
+      const raw = localStorage.getItem(STORAGE_KEY);
+      students = raw ? JSON.parse(raw) : seed();
+    }catch(e){
+      students = seed();
+    }
+    if(!localStorage.getItem(STORAGE_KEY)) save();
+  }
+  function seed(){
+    return [
+      {id: cryptoId(), roll:"101", name:"Pragee", course:"CSE", email:"pragee@college.edu"},
+      {id: cryptoId(), roll:"102", name:"Arun", course:"ECE", email:"arun@college.edu"},
+      {id: cryptoId(), roll:"103", name:"Priya", course:"IT", email:"priya@college.edu"}
+    ];
+  }
+  function save(){
+    try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(students)); }catch(e){}
+  }
+  function cryptoId(){
+    return "s_" + Math.random().toString(36).slice(2,10) + Date.now().toString(36);
+  }
+  function showToast(msg){
+    toast.textContent = msg;
+    toast.classList.add("show");
+    clearTimeout(showToast._t);
+    showToast._t = setTimeout(()=>toast.classList.remove("show"), 1800);
+  }
+
+  function validate(values, ignoreId){
+    const errors = {};
+    if(!values.name.trim()) errors.name = "Name can't be empty.";
+    if(!values.roll.trim()) errors.roll = "Roll number can't be empty.";
+    else if(students.some(s => s.roll === values.roll.trim() && s.id !== ignoreId))
+      errors.roll = "That roll number is already in use.";
+    if(!values.course.trim()) errors.course = "Course can't be empty.";
+    const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.email.trim());
+    if(!values.email.trim()) errors.email = "Email can't be empty.";
+    else if(!emailOk) errors.email = "Enter a valid email address.";
+    return errors;
+  }
+  function clearErrors(){
+    ["name","roll","course","email"].forEach(k => document.getElementById("err-"+k).textContent = "");
+  }
+  function renderErrors(errors){
+    clearErrors();
+    Object.keys(errors).forEach(k => {
+      const el = document.getElementById("err-"+k);
+      if(el) el.textContent = errors[k];
+    });
+  }
+
+  function render(){
+    const q = searchInput.value.trim().toLowerCase();
+    const rows = students
+      .filter(s => !q || [s.name,s.roll,s.course,s.email].join(" ").toLowerCase().includes(q))
+      .sort((a,b) => a.roll.localeCompare(b.roll, undefined, {numeric:true}));
+
+    tableBody.innerHTML = "";
+    rows.forEach(s => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td class="roll">${escapeHtml(s.roll)}</td>
+        <td>${escapeHtml(s.name)}</td>
+        <td>${escapeHtml(s.course)}</td>
+        <td>${escapeHtml(s.email)}</td>
+        <td>
+          <div class="actions">
+            <button class="btn-edit" data-action="edit" data-id="${s.id}">Edit</button>
+            <button class="btn-del" data-action="delete" data-id="${s.id}">Delete</button>
+          </div>
+        </td>`;
+      tableBody.appendChild(tr);
+    });
+
+    emptyState.style.display = rows.length ? "none" : "block";
+    countVal.textContent = students.length;
+  }
+  function escapeHtml(str){
+    return String(str).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+  }
+
+  function startEdit(id){
+    const s = students.find(s => s.id === id);
+    if(!s) return;
+    editingId = id;
+    document.getElementById("name").value = s.name;
+    document.getElementById("roll").value = s.roll;
+    document.getElementById("course").value = s.course;
+    document.getElementById("email").value = s.email;
+    clearErrors();
+    formTitle.textContent = "Edit student";
+    submitBtn.textContent = "Save changes";
+    cancelBtn.style.display = "inline-block";
+    editFlag.classList.add("show");
+    document.getElementById("name").focus();
+    window.scrollTo({top:0, behavior:"smooth"});
+  }
+  function endEdit(){
+    editingId = null;
+    form.reset();
+    clearErrors();
+    formTitle.textContent = "Add a student";
+    submitBtn.textContent = "Add student";
+    cancelBtn.style.display = "none";
+    editFlag.classList.remove("show");
+  }
+
+  form.addEventListener("submit", function(e){
+    e.preventDefault();
+    const values = {
+      name: document.getElementById("name").value,
+      roll: document.getElementById("roll").value,
+      course: document.getElementById("course").value,
+      email: document.getElementById("email").value
+    };
+    const errors = validate(values, editingId);
+    if(Object.keys(errors).length){ renderErrors(errors); return; }
+
+    if(editingId){
+      const s = students.find(s => s.id === editingId);
+      s.name = values.name.trim(); s.roll = values.roll.trim();
+      s.course = values.course.trim(); s.email = values.email.trim();
+      showToast("Student updated.");
+    } else {
+      students.push({
+        id: cryptoId(),
+        name: values.name.trim(), roll: values.roll.trim(),
+        course: values.course.trim(), email: values.email.trim()
+      });
+      showToast("Student added.");
+    }
+    save();
+    endEdit();
+    render();
+  });
+
+  cancelBtn.addEventListener("click", endEdit);
+
+  tableBody.addEventListener("click", function(e){
+    const btn = e.target.closest("button[data-action]");
+    if(!btn) return;
+    const id = btn.getAttribute("data-id");
+    if(btn.dataset.action === "edit"){
+      startEdit(id);
+    } else if(btn.dataset.action === "delete"){
+      const s = students.find(s => s.id === id);
+      if(s && confirm(`Delete ${s.name} (Roll ${s.roll})?`)){
+        students = students.filter(s => s.id !== id);
+        if(editingId === id) endEdit();
+        save();
+        render();
+        showToast("Student deleted.");
+      }
+    }
+  });
+
+  searchInput.addEventListener("input", render);
+
+  load();
+  render();
+})();
+</script>
+</body>
+</html>
